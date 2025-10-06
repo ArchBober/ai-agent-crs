@@ -3,6 +3,8 @@ from dotenv import load_dotenv
 from google import genai
 import sys
 
+from google.genai import types
+
 
 load_dotenv()
 api_key = os.environ.get("GEMINI_API_KEY")
@@ -16,13 +18,17 @@ def main():
 
     print("Hello from ai-agent-crs!")
 
-    client_prompt = sys.argv[1]
+    user_prompt = sys.argv[1]
+
+    messages = [
+        types.Content(role="user", parts=[types.Part(text=user_prompt)]),
+    ]
 
     response = client.models.generate_content(
         model='gemini-2.0-flash-001', 
-        contents=client_prompt
+        contents=messages
     )
-    
+
     print(response.text)
     print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
     print(f"Response tokens: {response.usage_metadata.candidates_token_count}")
