@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from google import genai
 from config import SYSTEM_PROMPT
 import sys
+from functions.call_function import call_function, available_functions
 
 from google.genai import types
 from functions.get_files_info import schema_get_files_info
@@ -38,15 +39,6 @@ def main():
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
 
-    available_functions = types.Tool(
-        function_declarations=[
-            schema_get_files_info,
-            schema_get_file_content,
-            schema_write_file,
-            schema_run_python_file,
-        ],
-    )
-
     config = types.GenerateContentConfig(
         tools=[available_functions],
         system_instruction=SYSTEM_PROMPT
@@ -67,8 +59,22 @@ def main():
     if not response.function_calls:
         print(response.text)
         
+    function_responses = []
     for function_call_part in response.function_calls:
-        print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+        function_call_result = call_function(function_call_part, verbose)
+        if (
+            not function_call_result.parts
+            or not function_call_result.parts[0].function_response
+        ):
+            raise Exception("empty function call result")
+        if verbose:
+            print(f"-> {function_call_result.parts[0].function_response.response}")
+        function_responses.append(function_call_result.parts[0])
+
+    if not function_responses:
+        raise Exception("no function responses generated, exiting.")
+
+
 
 
 
