@@ -1,9 +1,11 @@
 import os
 from dotenv import load_dotenv
 from google import genai
+from config import SYSTEM_PROMPT
 import sys
 
 from google.genai import types
+from functions.get_files_info import schema_get_files_info
 
 
 load_dotenv()
@@ -33,18 +35,32 @@ def main():
         types.Content(role="user", parts=[types.Part(text=user_prompt)]),
     ]
 
+    available_functions = types.Tool(
+        function_declarations=[
+            schema_get_files_info,
+        ],
+    )
+
+    config = types.GenerateContentConfig(
+        tools=[available_functions],
+        system_instruction=SYSTEM_PROMPT
+    )
+
+
     response = client.models.generate_content(
         model='gemini-2.0-flash-001', 
-        contents=messages
+        contents=messages,
+        config=config
     )
 
     if verbose:
         print(f"User prompt: {messages[0].parts[0].text}")
         print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}\n")
-
-    print(response.text)
-
+    if response.function_calls:
+        print(f"Calling function: {response.function_calls[0].name}({response.function_calls[0].args})")
+    else:
+        print(response.text)
 
 
 if __name__ == "__main__":
