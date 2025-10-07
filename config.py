@@ -1,5 +1,6 @@
 WORKING_DIR="./calculator"
 MAX_CHARS = 10000
+MAX_ITERS = 20
 SYSTEM_PROMPT = """
 You are a helpful AI coding agent.
 
