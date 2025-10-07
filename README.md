@@ -1,1 +1,1 @@
-# calculator
+# Basic AI agent - code helper
