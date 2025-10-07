@@ -63,10 +63,13 @@ def main():
         print(f"User prompt: {messages[0].parts[0].text}")
         print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
         print(f"Response tokens: {response.usage_metadata.candidates_token_count}\n")
-    if response.function_calls:
-        print(f"Calling function: {response.function_calls[0].name}({response.function_calls[0].args})")
-    else:
+
+    if not response.function_calls:
         print(response.text)
+        
+    for function_call_part in response.function_calls:
+        print(f"Calling function: {function_call_part.name}({function_call_part.args})")
+
 
 
 if __name__ == "__main__":
